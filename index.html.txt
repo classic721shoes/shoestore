@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KickKart – Online Shoe Store</title>
+  <meta name="description" content="Affordable, stylish shoes. Free COD available." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #0f172a; /* slate-900 */
+      --card: #111827; /* gray-900 */
+      --muted:#94a3b8; /* slate-400 */
+      --txt:#e5e7eb; /* gray-200 */
+      --brand:#10b981; /* emerald-500 */
+      --brand-600:#059669;
+      --danger:#ef4444;
+      --ring: rgba(16,185,129,.35);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;height:100%;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#0b1220 0%, #0f172a 40%, #0b1220 100%);color:var(--txt)}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:1200px;margin:0 auto;padding:20px}
+    header{position:sticky;top:0;z-index:50;backdrop-filter:saturate(180%) blur(10px);background:rgba(2,6,23,.6);border-bottom:1px solid rgba(148,163,184,.15)}
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 20px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.3px}
+    .brand .logo{width:38px;height:38px;border-radius:12px;background:conic-gradient(from 200deg,var(--brand),#22d3ee,#6366f1);display:grid;place-items:center;color:white;font-weight:900;box-shadow:0 8px 30px rgba(16,185,129,.35)}
+    .brand span{font-size:1.2rem}
+    .search{flex:1;max-width:420px;margin:0 16px;position:relative}
+    .search input{width:100%;padding:12px 44px;border:1px solid rgba(148,163,184,.2);background:#0b1220;color:var(--txt);border-radius:14px;outline:none}
+    .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.6}
+    .actions{display:flex;align-items:center;gap:10px}
+    .btn{padding:10px 14px;border-radius:12px;border:1px solid rgba(148,163,184,.25);background:#0b1220;color:var(--txt);cursor:pointer}
+    .btn.brand{background:var(--brand);border-color:var(--brand);color:#051b11;font-weight:700}
+    .btn.brand:hover{background:var(--brand-600)}
+    .pill{font-size:.8rem;color:var(--muted)}
+
+    .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:center;margin:24px 0}
+    .heroCard{background:radial-gradient(1200px 500px at 10% -10%, rgba(16,185,129,.08), transparent 60%), #0b1220;border:1px solid rgba(148,163,184,.15);padding:28px;border-radius:22px;box-shadow:0 20px 60px rgba(2,6,23,.6)}
+    .hero h1{font-size:clamp(28px,4vw,44px);margin:0 0 10px}
+    .hero p{color:var(--muted);margin:0 0 20px}
+
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    @media (max-width:1000px){.grid{grid-template-columns:repeat(3,1fr)} .hero{grid-template-columns:1fr}}
+    @media (max-width:700px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:460px){.grid{grid-template-columns:1fr}}
+
+    .card{background:linear-gradient(180deg,#0b1220, #0f172a);border:1px solid rgba(148,163,184,.15);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;transition:transform .15s ease, box-shadow .15s ease}
+    .card:hover{transform:translateY(-4px);box-shadow:0 10px 30px rgba(16,185,129,.15)}
+    .imgWrap{aspect-ratio:1.2/1;position:relative;overflow:hidden}
+    .imgWrap img{width:100%;height:100%;object-fit:cover;display:block}
+    .badge{position:absolute;left:10px;top:10px;background:rgba(16,185,129,.2);color:#a7f3d0;border:1px solid rgba(16,185,129,.45);padding:6px 10px;border-radius:999px;font-size:.75rem;font-weight:700}
+    .cardBody{padding:14px 14px 16px;display:flex;flex-direction:column;gap:8px}
+    .title{font-weight:700}
+    .muted{color:var(--muted);font-size:.9rem}
+    .priceRow{display:flex;align-items:center;gap:10px}
+    .price{font-weight:800}
+    .mrp{color:var(--muted);text-decoration:line-through}
+    .sizeRow{display:flex;gap:8px;flex-wrap:wrap}
+    .size{border:1px solid rgba(148,163,184,.25);padding:6px 10px;border-radius:10px;cursor:pointer;font-size:.85rem}
+    .size.active{background:rgba(16,185,129,.15);border-color:var(--brand);box-shadow:0 0 0 3px var(--ring)}
+
+    .cardFooter{margin-top:auto;display:flex;gap:8px}
+    .qty{display:flex;align-items:center;border:1px solid rgba(148,163,184,.25);border-radius:10px}
+    .qty button{all:unset;padding:8px 12px;cursor:pointer}
+    .qty input{all:unset;width:34px;text-align:center}
+
+    /* Cart Drawer */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(2px);display:none}
+    .drawer{position:fixed;top:0;right:-430px;width:420px;max-width:100%;height:100%;background:#0a0f1a;border-left:1px solid rgba(148,163,184,.2);box-shadow:-10px 0 30px rgba(0,0,0,.4);transition:right .2s ease;display:flex;flex-direction:column}
+    .drawer.open{right:0}
+    .overlay.show{display:block}
+    .drawer header{padding:16px 18px;border-bottom:1px solid rgba(148,163,184,.15)}
+    .drawer h3{margin:0}
+    .cartItems{flex:1;overflow:auto;padding:14px}
+    .cartRow{display:grid;grid-template-columns:64px 1fr auto;gap:10px;align-items:center;border:1px solid rgba(148,163,184,.12);border-radius:12px;padding:10px;margin-bottom:10px}
+    .cartRow img{width:64px;height:64px;object-fit:cover;border-radius:10px}
+    .cartRow .meta{font-size:.9rem}
+    .cartRow .meta .muted{font-size:.8rem}
+    .cartFoot{padding:14px;border-top:1px solid rgba(148,163,184,.15)}
+    .row{display:flex;justify-content:space-between;margin:6px 0}
+    .checkoutBtn{width:100%;margin-top:10px}
+
+    /* Checkout Modal */
+    .modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(2,6,23,.7);padding:12px}
+    .modal.show{display:grid}
+    .modalCard{width:min(720px,100%);background:#080d17;border:1px solid rgba(148,163,184,.15);border-radius:18px;padding:16px}
+    .modalCard h3{margin:8px 0 2px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width:720px){.grid2{grid-template-columns:1fr}}
+    .input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(148,163,184,.25);background:#0b1220;color:var(--txt)}
+    .radioRow{display:flex;gap:14px;margin:8px 0}
+    .qr{border:1px dashed rgba(148,163,184,.3);border-radius:12px;padding:10px;text-align:center;color:var(--muted)}
+    .note{color:var(--muted);font-size:.9rem}
+    .success{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.4);padding:10px;border-radius:10px}
+    footer{padding:40px 0;color:#9aa4b2;text-align:center}
+    .link{color:#a7f3d0}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav container">
+      <div class="brand"><div class="logo">KK</div><span>KickKart</span></div>
+      <div class="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.5"/></svg>
+        <input id="search" type="search" placeholder="Search shoes, brand, size..." />
+      </div>
+      <div class="actions">
+        <span class="pill" id="shipNote">Free COD in India</span>
+        <button id="openCart" class="btn brand">🛒 <span id="cartCount">0</span></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="heroCard">
+        <h1>Fresh Kicks. Fair Prices.</h1>
+        <p>Daily‑wear sneakers and sports shoes. 7‑day replacement, COD available. Limited Diwali offers ✨</p>
+        <div style="display:flex;gap:10px;margin-top:10px">
+          <a href="#catalog" class="btn brand">Shop Now</a>
+          <a href="#how" class="btn">How to Order</a>
+        </div>
+      </div>
+      <div class="heroCard" id="promo">
+        <div class="success">
+          <strong>Festive Deal:</strong> Use code <b>WELCOME100</b> on orders ₹999+.
+        </div>
+        <p class="note" style="margin-top:10px">Tip: You can change or remove this banner text in the HTML.</p>
+        <div class="qr" style="margin-top:12px">
+          <div style="font-weight:700;margin-bottom:6px">UPI QR (optional)</div>
+          <div style="font-size:.9rem">Replace this box with your UPI QR image for prepaid orders.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="catalog" style="margin:20px 0 8px;display:flex;align-items:end;justify-content:space-between">
+      <div>
+        <h2 style="margin:0">Catalog</h2>
+        <div class="pill">Handpicked bestsellers</div>
+      </div>
+      <div>
+        <label class="pill">Sort: 
+          <select id="sort" class="input" style="width:auto;padding:6px 8px">
+            <option value="pop">Popularity</option>
+            <option value="low">Price: Low to High</option>
+            <option value="high">Price: High to Low</option>
+            <option value="new">New Arrivals</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section class="grid" id="productGrid"></section>
+
+    <section id="how" style="margin-top:30px" class="heroCard">
+      <h3 style="margin:0 0 8px">How to Order</h3>
+      <ol>
+        <li>Choose size and click <b>Add to Cart</b>.</li>
+        <li>Open cart (top‑right) and click <b>Checkout</b>.</li>
+        <li>Fill your name, phone, address and select <b>COD</b> or <b>UPI</b>.</li>
+        <li>For WhatsApp orders, we generate a message with your order summary to send directly.</li>
+      </ol>
+    </section>
+  </main>
+
+  <!-- CART DRAWER -->
+  <div class="overlay" id="overlay"></div>
+  <aside class="drawer" id="drawer">
+    <header style="display:flex;align-items:center;justify-content:space-between">
+      <h3>Cart</h3>
+      <button class="btn" id="closeCart">✕</button>
+    </header>
+    <div class="cartItems" id="cartItems"></div>
+    <div class="cartFoot">
+      <div class="row"><span>Subtotal</span><strong id="subTotal">₹0</strong></div>
+      <div class="row"><span>Shipping</span><span id="ship">₹0</span></div>
+      <div class="row"><span>Discount</span><span id="discount">₹0</span></div>
+      <div class="row" style="border-top:1px dashed rgba(148,163,184,.2);padding-top:8px"><span>Total</span><strong id="grand">₹0</strong></div>
+      <input id="coupon" class="input" placeholder="Coupon code (e.g., WELCOME100)" style="margin-top:10px"/>
+      <button id="applyCoupon" class="btn" style="margin-top:6px">Apply</button>
+      <button id="checkout" class="btn brand checkoutBtn">Checkout</button>
+    </div>
+  </aside>
+
+  <!-- CHECKOUT MODAL -->
+  <div class="modal" id="checkoutModal">
+    <div class="modalCard">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3>Checkout</h3>
+        <button class="btn" id="closeModal">✕</button>
+      </div>
+      <div class="grid2" style="margin-top:8px">
+        <form id="orderForm">
+          <label>Full Name<input required class="input" id="name" placeholder="Your name"/></label><br><br>
+          <label>Phone<input required class="input" id="phone" placeholder="10-digit mobile" pattern="[0-9]{10}"/></label><br><br>
+          <label>Address<textarea required class="input" id="address" placeholder="House, street, city, pincode" rows="4"></textarea></label><br>
+          <div class="radioRow">
+            <label><input type="radio" name="pmode" value="COD" checked/> Cash on Delivery</label>
+            <label><input type="radio" name="pmode" value="UPI"/> UPI</label>
+          </div>
+          <label>Order Notes (optional)
+            <textarea class="input" id="notes" rows="3" placeholder="Landmark, size exchange note, etc."></textarea>
+          </label>
+          <button class="btn brand" style="margin-top:10px">Place Order</button>
+        </form>
+        <div>
+          <h4 style="margin:6px 0">Order Summary</h4>
+          <div id="orderSummary" class="pill">No items yet.</div>
+          <div class="qr" style="margin-top:12px" id="upiBox">
+            <div style="font-weight:700;margin-bottom:6px">Pay by UPI (Optional)</div>
+            <div>Show your UPI ID or QR here. After payment, keep the UTR/Ref no.</div>
+          </div>
+          <div class="note" style="margin-top:10px">We will confirm on WhatsApp within 10 minutes during working hours.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <div>© <span id="yr"></span> KickKart. All rights reserved. | <a class="link" href="#">Refund & Exchange</a> | <a class="link" href="#">Privacy</a></div>
+      <div style="margin-top:6px" class="pill">Made with ❤️. Replace text, logo, products to make it yours.</div>
+    </div>
+  </footer>
+
+  <script>
+    // ---------- CONFIG: EDIT THESE ----------
+    const STORE = {
+      name: 'KickKart',
+      shippingFlat: 0,                  // ₹ shipping fee (0 for free)
+      freeShipMin: 999,                 // free shipping above ₹
+      coupon: { code: 'WELCOME100', min: 999, amount: 100 },
+      whatsapp: '91XXXXXXXXXX'          // <-- put your WhatsApp number with country code (e.g., 919876543210)
+    };
+
+    const PRODUCTS = [
+      {id:1, title:'Velocity Runner', brand:'KK', price:1499, mrp:2199, sizes:['6','7','8','9','10'], img:'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1200&auto=format&fit=crop'},
+      {id:2, title:'Urban Classic', brand:'KK', price:1299, mrp:1799, sizes:['6','7','8','9','10','11'], img:'https://images.unsplash.com/photo-1542326237-94b1c5a538d5?q=80&w=1200&auto=format&fit=crop'},
+      {id:3, title:'Court Ace', brand:'KK', price:1599, mrp:2399, sizes:['6','7','8','9'], img:'https://images.unsplash.com/photo-1552346154-21d32810aba3?q=80&w=1200&auto=format&fit=crop'},
+      {id:4, title:'Trail Flex', brand:'KK', price:1899, mrp:2699, sizes:['7','8','9','10'], img:'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?q=80&w=1200&auto=format&fit=crop'},
+      {id:5, title:'Everyday Lite', brand:'KK', price:999,  mrp:1399, sizes:['6','7','8','9','10'], img:'https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=1200&auto=format&fit=crop'},
+      {id:6, title:'Sprint Pro', brand:'KK', price:2199, mrp:2999, sizes:['7','8','9','10','11'], img:'https://images.unsplash.com/photo-1520975693416-35a1cbcb0575?q=80&w=1200&auto=format&fit=crop'},
+      {id:7, title:'Street Glide', brand:'KK', price:1199, mrp:1699, sizes:['6','7','8','9','10'], img:'https://images.unsplash.com/photo-1542291024-54fd6b7077fd?q=80&w=1200&auto=format&fit=crop'},
+      {id:8, title:'Hi‑Top Nova', brand:'KK', price:2499, mrp:3299, sizes:['7','8','9','10'], img:'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop'}
+    ];
+    // ---------------------------------------
+
+    const $ = sel => document.querySelector(sel);
+    const fmt = n => '₹' + n.toLocaleString('en-IN');
+
+    const state = { cart: JSON.parse(localStorage.getItem('kk_cart')||'[]'), sizeSel: {} };
+    const save = () => localStorage.setItem('kk_cart', JSON.stringify(state.cart));
+
+    function renderProducts(list=PRODUCTS){
+      const grid = $('#productGrid');
+      grid.innerHTML = '';
+      list.forEach(p=>{
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="imgWrap">
+            <img src="${p.img}" alt="${p.title}">
+            ${p.mrp-p.price>400 ? '<div class="badge">Save ₹'+(p.mrp-p.price)+'</div>': ''}
+          </div>
+          <div class="cardBody">
+            <div class="title">${p.title}</div>
+            <div class="muted">${p.brand}</div>
+            <div class="priceRow"><div class="price">${fmt(p.price)}</div> <div class="mrp">${fmt(p.mrp)}</div></div>
+            <div class="sizeRow" data-id="${p.id}">
+              ${p.sizes.map(s=>`<button class="size" data-size="${s}">${s}</button>`).join('')}
+            </div>
+            <div class="cardFooter">
+              <div class="qty"><button class="minus">−</button><input value="1"/><button class="plus">+</button></div>
+              <button class="btn brand addBtn" data-id="${p.id}">Add to Cart</button>
+            </div>
+          </div>`;
+        grid.appendChild(card);
+      });
+    }
+
+    function attachInteractions(){
+      // size selection
+      document.querySelectorAll('.sizeRow').forEach(row=>{
+        row.addEventListener('click', e=>{
+          const btn = e.target.closest('.size');
+          if(!btn) return;
+          row.querySelectorAll('.size').forEach(s=>s.classList.remove('active'));
+          btn.classList.add('active');
+          const pid = row.getAttribute('data-id');
+          state.sizeSel[pid] = btn.dataset.size;
+        });
+      });
+      // qty
+      document.querySelectorAll('.card').forEach(card=>{
+        const minus = card.querySelector('.minus');
+        const plus = card.querySelector('.plus');
+        const input = card.querySelector('input');
+        minus.onclick = ()=>{ input.value = Math.max(1, (+input.value||1)-1) };
+        plus.onclick = ()=>{ input.value = (+input.value||1)+1 };
+      });
+      // add to cart
+      document.querySelectorAll('.addBtn').forEach(btn=>{
+        btn.addEventListener('click', e=>{
+          const id = +btn.dataset.id;
+          const card = btn.closest('.card');
+          const qty = +card.querySelector('input').value || 1;
+          const size = state.sizeSel[id];
+          if(!size){ alert('Please select a size first.'); return; }
+          const prod = PRODUCTS.find(p=>p.id===id);
+          const lineKey = id+'_'+size;
+          const existing = state.cart.find(i=>i.key===lineKey);
+          if(existing) existing.qty += qty; else state.cart.push({ key:lineKey, id, size, qty, price:prod.price, title:prod.title, img:prod.img });
+          save();
+          updateCartUI();
+          openCart();
+        });
+      });
+    }
+
+    function updateCartUI(){
+      const items = $('#cartItems');
+      items.innerHTML = '';
+      let sub = 0;
+      state.cart.forEach((i,idx)=>{
+        sub += i.qty * i.price;
+        const row = document.createElement('div');
+        row.className = 'cartRow';
+        row.innerHTML = `
+          <img src="${i.img}" alt="${i.title}">
+          <div class="meta">
+            <div><strong>${i.title}</strong></div>
+            <div class="muted">Size ${i.size} · ${fmt(i.price)} × ${i.qty}</div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn" data-idx="${idx}" data-act="dec">−</button>
+            <button class="btn" data-idx="${idx}" data-act="inc">+</button>
+            <button class="btn" data-idx="${idx}" data-act="del">🗑️</button>
+          </div>`;
+        items.appendChild(row);
+      });
+      const ship = sub && sub < STORE.freeShipMin ? STORE.shippingFlat : 0;
+      const discount = (appliedCoupon && sub >= appliedCoupon.min) ? appliedCoupon.amount : 0;
+      $('#subTotal').textContent = fmt(sub);
+      $('#ship').textContent = ship? fmt(ship) : 'Free';
+      $('#discount').textContent = discount? ('−'+fmt(discount)) : '₹0';
+      const grand = Math.max(0, sub + ship - discount);
+      $('#grand').textContent = fmt(grand);
+      $('#cartCount').textContent = state.cart.reduce((n,i)=>n+i.qty,0);
+
+      // events in cart rows
+      items.querySelectorAll('button').forEach(b=>{
+        b.onclick = ()=>{
+          const idx = +b.dataset.idx; const act = b.dataset.act;
+          if(act==='inc') state.cart[idx].qty++;
+          if(act==='dec') state.cart[idx].qty = Math.max(1, state.cart[idx].qty-1);
+          if(act==='del') state.cart.splice(idx,1);
+          save(); updateCartUI();
+        }
+      });
+
+      // summary for modal
+      const lines = state.cart.map(i=>`${i.title} (Size ${i.size}) x ${i.qty} = ${fmt(i.qty*i.price)}`).join('\n');
+      const g = grand;
+      $('#orderSummary').textContent = lines? (lines + `\nTotal: ${fmt(g)}`) : 'No items yet.';
+    }
+
+    function openCart(){ $('#overlay').classList.add('show'); $('#drawer').classList.add('open'); }
+    function closeCart(){ $('#overlay').classList.remove('show'); $('#drawer').classList.remove('open'); }
+
+    let appliedCoupon = null;
+
+    // Sorting & Search
+    function sortProducts(mode){
+      const arr = [...PRODUCTS];
+      if(mode==='low') arr.sort((a,b)=>a.price-b.price);
+      else if(mode==='high') arr.sort((a,b)=>b.price-a.price);
+      else if(mode==='new') arr.reverse();
+      return arr;
+    }
+
+    function filterBySearch(q){
+      q = q.trim().toLowerCase();
+      if(!q) return PRODUCTS;
+      return PRODUCTS.filter(p=>
+        p.title.toLowerCase().includes(q) ||
+        p.brand.toLowerCase().includes(q) ||
+        p.sizes.join(',').includes(q)
+      );
+    }
+
+    // Checkout
+    function openCheckout(){
+      if(!state.cart.length){ alert('Your cart is empty.'); return; }
+      $('#checkoutModal').classList.add('show');
+    }
+    function closeCheckout(){ $('#checkoutModal').classList.remove('show'); }
+
+    function buildWhatsAppMessage(order){
+      const lines = state.cart.map(i=>`• ${i.title} (Size ${i.size}) x ${i.qty} = ${i.qty*i.price}`).join('%0A');
+      const total = document.getElementById('grand').textContent;
+      const text = `New Order:%0A${lines}%0ATotal: ${total}%0A%0AName: ${order.name}%0APhone: ${order.phone}%0AAddress: ${order.address}%0APayment: ${order.pmode}%0ANotes: ${order.notes||'-'}`;
+      return `https://wa.me/${STORE.whatsapp}?text=${text}`;
+    }
+
+    // INIT
+    (function(){
+      document.getElementById('yr').textContent = new Date().getFullYear();
+      renderProducts();
+      attachInteractions();
+      updateCartUI();
+
+      // open/close cart
+      document.getElementById('openCart').onclick = openCart;
+      document.getElementById('closeCart').onclick = closeCart;
+      document.getElementById('overlay').onclick = closeCart;
+      document.getElementById('checkout').onclick = openCheckout;
+      document.getElementById('closeModal').onclick = closeCheckout;
+
+      // coupon
+      document.getElementById('applyCoupon').onclick = ()=>{
+        const code = document.getElementById('coupon').value.trim();
+        if(code && code.toUpperCase() === STORE.coupon.code){
+          appliedCoupon = STORE.coupon; alert('Coupon applied!');
+        } else { appliedCoupon = null; alert('Invalid coupon'); }
+        updateCartUI();
+      };
+
+      // search
+      document.getElementById('search').addEventListener('input', (e)=>{
+        const q = e.target.value; const sorted = sortProducts(document.getElementById('sort').value);
+        renderProducts(filterBySearch(q).filter(p=> sorted.includes(p)));
+        attachInteractions();
+      });
+      document.getElementById('sort').addEventListener('change', (e)=>{
+        const q = document.getElementById('search').value;
+        const arr = sortProducts(e.target.value);
+        const filtered = filterBySearch(q);
+        renderProducts(arr.filter(p=> filtered.includes(p)));
+        attachInteractions();
+      });
+
+      // form submit
+      document.getElementById('orderForm').addEventListener('submit', (e)=>{
+        e.preventDefault();
+        const order = {
+          name: document.getElementById('name').value.trim(),
+          phone: document.getElementById('phone').value.trim(),
+          address: document.getElementById('address').value.trim(),
+          pmode: document.querySelector('input[name="pmode"]:checked').value,
+          notes: document.getElementById('notes').value.trim()
+        };
+        if(!order.name || !order.phone || !order.address){ alert('Please fill all required fields.'); return; }
+        // Build WhatsApp URL and open in new tab
+        const wa = buildWhatsAppMessage(order);
+        window.open(wa, '_blank');
+        alert('Order prepared for WhatsApp. Please send the message to confirm.');
+        closeCheckout();
+      });
+    })();
+  </script>
+</body>
+</html>
